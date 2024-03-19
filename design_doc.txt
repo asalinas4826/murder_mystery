@@ -1,0 +1,26 @@
+Core idea:
+- early 20th century murder mystery
+- you're in either a mansion or remote village
+	- and you get snowed in
+- murder happens, you have to solve it yourself
+- similar in style to ROTOD and COTGI, where the
+	game doesn't clue you in or help you
+	- player should FEEL like a detective
+	- AGENCY
+
+Graphical style:
+- black, white, red for blood
+- pixel art, cartoonish
+
+Mechanics:
+- no inventory, no clue system
+- just a notepad, and anything can be a clue
+- basically walk around and talk to people
+	and look around in rooms and draw your own
+	conclusions
+- idea: what if you weren't told if your
+	accusations are correct?
+- "presenting evidence":
+	- take a statement from a witness and present it
+		against a statement from another witness
+	- this will be the main form of progression
