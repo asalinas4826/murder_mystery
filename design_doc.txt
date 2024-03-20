@@ -1,4 +1,4 @@
-Core idea:
+Core idea
 - early 20th century murder mystery
 - you're in either a mansion or remote village
 	- and you get snowed in
@@ -7,26 +7,54 @@ Core idea:
 	game doesn't clue you in or help you
 	- player should FEEL like a detective
 	- AGENCY
+- question witnesses and gather environmental 
+	evidence
 
-Graphical style:
+Graphical style
 - black, white, red for blood
 - pixel art, cartoonish
 
-Mechanics:
+Mechanics
 - no inventory, no clue system
 - just a notepad, and anything can be a clue
 - basically walk around and talk to people
 	and look around in rooms and draw your own
 	conclusions
-- idea: what if you weren't told if your
-	accusations are correct?
 - "presenting evidence":
 	- take a statement from a witness and present it
 	  against a statement from another witness
 	- this will be the main form of progression
+	- evidence can also be taken from the environment
+		- point-and-click
+		- examine an object and a descriptive sentence
+			will be written to the textbox
+		- present against witness statements in the same
+			way
 
-UI:
+Ideas
+- idea: what if you weren't told if your
+	accusations are correct?
+- idea: play as a priest
+	- Confession could be a hint system
+		- people would reveal things to you that they
+			normally wouldn't, but they're behind a screen
+		- can't use info gained in confession anywhere
+			else
+
+UI
 - textbox at bottom
 - ESC for settings
 - notepad on right
 - evidence tab pops up with TAB
+
+Todos
+- QOL: better note-taking
+	- scale textbox char width w/ screen size
+	- better backspace for note-taking
+	- cursor during note-taking
+	- find good font
+- CORE: make an interactable room
+	- objects can be clicked on and show text
+	- NPC you can talk to
+
+

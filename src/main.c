@@ -12,11 +12,53 @@
 #define INITIAL_HEIGHT 640
 #define FLOOR_HEIGHT 32
 
-
 enum mode {
 	MOVE,
 	NOTES
 };
+
+typedef struct {
+	char* text;
+	u32 size; // total memory allocated
+	u32 width; // chars in current line
+	u32 max_width; // max chars per line
+	Font font;
+	f32 font_size;
+} Textbox;
+
+void takeNotes(Textbox* notes) {
+	char in = '\0';
+	in = GetCharPressed();
+
+	if (in != 0 && TextLength(notes->text) < notes->size - 1) { // chars
+		notes->text[TextLength(notes->text) + 1] = notes->text[TextLength(notes->text)];
+		notes->text[TextLength(notes->text)] = in;
+		notes->width++;
+		if (notes->width >= notes->max_width) {
+			notes->text[TextLength(notes->text) + 1] = notes->text[TextLength(notes->text)];
+			notes->text[TextLength(notes->text)] = '\n';
+			notes->width = 0;
+		}
+	}
+	else if (IsKeyPressed(KEY_ENTER) && TextLength(notes->text) < notes->size - 1) { // \n
+		notes->text[TextLength(notes->text) + 1] = notes->text[TextLength(notes->text)];
+		notes->text[TextLength(notes->text)] = '\n';
+		notes->width = 0;
+	}
+	else if (IsKeyPressed(KEY_BACKSPACE) && TextLength(notes->text) > 0) { // backspace
+		notes->text[TextLength(notes->text) - 1] = '\0';
+		if (notes->width > 0) {
+			notes->width--;
+		}
+		else {
+			i32 i = TextLength(notes->text) - 1; // last '\n' char
+			while (i >= 0 && notes->text[i] != '\n') {
+				notes->width++;
+				i--;
+			}
+		}
+	}
+}
 
 int main() {
 	// SET UP WINDOW
@@ -44,6 +86,10 @@ int main() {
 	);
 
 	Texture2D player_walk_texture = LoadTexture("./resources/butler_walk.png");
+	ASSERT(
+			IsTextureReady(player_walk_texture),
+			"Failed to load texture. \n"
+	);
 
 	Sprite scene = {
 		scene_texture,
@@ -78,7 +124,18 @@ int main() {
 	enum mode mode = MOVE;
 
 	Vector2 origin = {0.0f, 0.0f};
-	Vector2 notes_pos = {180, 16};
+	Vector2 notes_pos = {185, 16};
+
+	Textbox notes = {
+		malloc(200 * sizeof(char)),
+		200,
+		0,
+		GetScreenWidth() / 60,
+		GetFontDefault(),
+		20,
+	};
+	notes.text[0] = '\0';
+	SetTextLineSpacing(20);
 
 	// MAIN GAME LOOP
 	i32 frames = 0;
@@ -95,14 +152,6 @@ int main() {
 
 		DrawBackground(&scene, origin, screen_height, screen_width, scale, frames);
 
-		// GET MODE
-		if (IsKeyPressed(KEY_I)) {
-			mode = NOTES;
-		}
-		else if (IsKeyPressed(KEY_ESCAPE)) {
-			mode = MOVE;
-		}
-
 		// DRAW PLAYER ACTION
 		switch (mode) {
 			case MOVE: {
@@ -110,10 +159,21 @@ int main() {
 				break;
 			}
 			case NOTES: {
-				DrawTextEx(GetFontDefault(), "Hello world!", Vector2Scale(notes_pos, scale), 10, 1, WHITE); 
+				takeNotes(&notes);
 				drawPlayerIdle(&player, &scene, scale, frames);
 				break;
 			}
+			default: {}
+		}
+
+		DrawTextEx(notes.font, notes.text, Vector2Scale(notes_pos, scale), notes.font_size, 4, WHITE); 
+
+		// GET INPUT MODE
+		if (IsKeyPressed(KEY_I)) {
+			mode = NOTES;
+		}
+		else if (IsKeyPressed(KEY_ESCAPE)) {
+			mode = MOVE;
 		}
 
 		// END DRAWING AND INCREMENT FRAME COUNT
@@ -122,6 +182,7 @@ int main() {
 	}
 
 	// CLEAN UP
+	free(notes.text);
 	UnloadTexture(scene.tex);
 	CloseWindow();
 	return 0;
