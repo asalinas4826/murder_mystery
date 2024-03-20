@@ -22,5 +22,11 @@ Mechanics:
 	accusations are correct?
 - "presenting evidence":
 	- take a statement from a witness and present it
-		against a statement from another witness
+	  against a statement from another witness
 	- this will be the main form of progression
+
+UI:
+- textbox at bottom
+- ESC for settings
+- notepad on right
+- evidence tab pops up with TAB

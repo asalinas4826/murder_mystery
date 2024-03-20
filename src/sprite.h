@@ -11,6 +11,7 @@ typedef struct {
 } Sprite;
 
 void DrawSprite(Sprite* s, 
+								bool flipped,
 								Sprite* scene,
 								Vector2 pos,
 								i32 screen_height, 

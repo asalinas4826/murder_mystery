@@ -5,10 +5,12 @@
 #include <stdlib.h>
 
 #include <raylib.h>
+#include <raymath.h>
 
 #define ASSERT(_e, ...) if (!(_e)) { fprintf(stderr, __VA_ARGS__); exit(1); }
 
-#define ASPECT_RATIO 10.0f / 9.0f
+#define ASPECT_RATIO 16.0f / 9.0f
+#define MOVE_SPEED 1
 
 typedef float    f32;
 typedef double   f64;

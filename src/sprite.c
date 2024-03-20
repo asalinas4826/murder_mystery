@@ -2,13 +2,18 @@
 #include <stdio.h>
 
 void DrawSprite(Sprite* s, 
+								bool flipped,
 								Sprite* scene,
 								Vector2 pos,
 								i32 screen_height, 
 								i32 screen_width,
 								f32 scale,
 								i32 frame) {
-	i32 texture_frame = (frame / s->fps) * s->height;
+
+	i32 texture_frame = 0;
+	if (s->fps > 1) {
+		texture_frame = (frame / s->fps) * s->height;
+	}
 
 	Rectangle src = {
 		0,
@@ -23,6 +28,10 @@ void DrawSprite(Sprite* s,
 		s->width * scale,
 		s->height * scale
 	};
+
+	if (flipped) {
+		src.width *= -1;
+	}
 
 	if (scene != NULL) {
 		dest.x += (screen_width - (scene->width * scale)) / 2;
@@ -40,5 +49,5 @@ void DrawBackground(Sprite* s,
 								i32 frame) {
 	i32 offset = (screen_width - (s->width * scale)) / 2;
 	pos.x += offset;
-	DrawSprite(s, NULL, pos, screen_height, screen_width, scale, frame);
+	DrawSprite(s, false, NULL, pos, screen_height, screen_width, scale, frame);
 }

@@ -36,8 +36,8 @@ dirs: $(BIN)
 $(OBJ): $(BIN)/%.o: %.c
 	$(CC) -o $@ -MP -MMD -c $(CCFLAGS) $(INCFLAGS) $<
 
-main: dirs $(BIN)/src/main.o $(BIN)/src/sprite.o
-	$(LD) -o bin/main $(BIN)/src/main.o $(BIN)/src/sprite.o $(LDFLAGS)
+main: dirs $(BIN)/src/main.o $(BIN)/src/sprite.o $(BIN)/src/player.o
+	$(LD) -o bin/main $(BIN)/src/main.o $(BIN)/src/sprite.o $(BIN)/src/player.o $(LDFLAGS)
 
 all: dirs main
 
