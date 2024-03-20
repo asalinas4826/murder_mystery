@@ -1,13 +1,11 @@
-#include <stdio.h>
-#include <stdint.h>
 #include <stdbool.h>
-#include <stdlib.h>
 #include <string.h>
 #include <math.h>
 
 #include "util.h"
 #include "sprite.h"
 #include "player.h"
+#include "notes.h"
 
 #define INITIAL_HEIGHT 640
 #define FLOOR_HEIGHT 32
@@ -16,49 +14,6 @@ enum mode {
 	MOVE,
 	NOTES
 };
-
-typedef struct {
-	char* text;
-	u32 size; // total memory allocated
-	u32 width; // chars in current line
-	u32 max_width; // max chars per line
-	Font font;
-	f32 font_size;
-} Textbox;
-
-void takeNotes(Textbox* notes) {
-	char in = '\0';
-	in = GetCharPressed();
-
-	if (in != 0 && TextLength(notes->text) < notes->size - 1) { // chars
-		notes->text[TextLength(notes->text) + 1] = notes->text[TextLength(notes->text)];
-		notes->text[TextLength(notes->text)] = in;
-		notes->width++;
-		if (notes->width >= notes->max_width) {
-			notes->text[TextLength(notes->text) + 1] = notes->text[TextLength(notes->text)];
-			notes->text[TextLength(notes->text)] = '\n';
-			notes->width = 0;
-		}
-	}
-	else if (IsKeyPressed(KEY_ENTER) && TextLength(notes->text) < notes->size - 1) { // \n
-		notes->text[TextLength(notes->text) + 1] = notes->text[TextLength(notes->text)];
-		notes->text[TextLength(notes->text)] = '\n';
-		notes->width = 0;
-	}
-	else if (IsKeyPressed(KEY_BACKSPACE) && TextLength(notes->text) > 0) { // backspace
-		notes->text[TextLength(notes->text) - 1] = '\0';
-		if (notes->width > 0) {
-			notes->width--;
-		}
-		else {
-			i32 i = TextLength(notes->text) - 1; // last '\n' char
-			while (i >= 0 && notes->text[i] != '\n') {
-				notes->width++;
-				i--;
-			}
-		}
-	}
-}
 
 int main() {
 	// SET UP WINDOW
@@ -126,7 +81,7 @@ int main() {
 	Vector2 origin = {0.0f, 0.0f};
 	Vector2 notes_pos = {185, 16};
 
-	Textbox notes = {
+	Textbox box = {
 		malloc(200 * sizeof(char)),
 		200,
 		0,
@@ -134,8 +89,24 @@ int main() {
 		GetFontDefault(),
 		20,
 	};
-	notes.text[0] = '\0';
+	box.text[0] = '\0';
+	// Textbox box = {
+	// 	"hi, this is a box \nmes\nsage", // char[]
+	// 	27, // total size allocated, including '\0'
+	// 	0, // current line width
+	// 	GetScreenWidth() / 60, // max line width
+	// 	GetFontDefault(), // font
+	// 	20 // font_size
+	// };
 	SetTextLineSpacing(20);
+
+	Vector2 c_pos = {0.0f, 0.0f};
+	TextField notes = {
+		box,
+		0, // cursor idx
+		3, // cursor offset
+		c_pos // cursor position
+	};
 
 	// MAIN GAME LOOP
 	i32 frames = 0;
@@ -159,14 +130,24 @@ int main() {
 				break;
 			}
 			case NOTES: {
-				takeNotes(&notes);
+				// takeNotes(&box);
+				if (IsKeyPressed(KEY_RIGHT)) {
+					cursorRight(&notes);
+				}
+				else if (IsKeyPressed(KEY_LEFT)) {
+					cursorLeft(&notes);
+				}
+				else {
+					takeNotes(&notes);
+				}
 				drawPlayerIdle(&player, &scene, scale, frames);
 				break;
 			}
 			default: {}
 		}
 
-		DrawTextEx(notes.font, notes.text, Vector2Scale(notes_pos, scale), notes.font_size, 4, WHITE); 
+		drawTextField(&notes, Vector2Scale(notes_pos, scale));
+		// DrawTextEx(notes.font, notes.text, Vector2Scale(notes_pos, scale), notes.font_size, 4, WHITE); 
 
 		// GET INPUT MODE
 		if (IsKeyPressed(KEY_I)) {
@@ -182,7 +163,7 @@ int main() {
 	}
 
 	// CLEAN UP
-	free(notes.text);
+	// free(notes.box.text);
 	UnloadTexture(scene.tex);
 	CloseWindow();
 	return 0;

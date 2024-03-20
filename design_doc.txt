@@ -30,6 +30,11 @@ Mechanics
 			will be written to the textbox
 		- present against witness statements in the same
 			way
+- need mechanic for actually accusing killer
+	- since it'll just be one big mystery, the accusation
+		needs to be a big climax
+	- or the part right before the accusation needs to be
+		a climax, i.e. the last puzzle solved
 
 Ideas
 - idea: what if you weren't told if your
