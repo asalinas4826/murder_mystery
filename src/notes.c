@@ -1,8 +1,33 @@
 #include "notes.h"
 
-i32 lineIndex(i32 start, Textbox* box) {
-	i32 width = 0;
-	while (start >= 0 && box->text[start] != '\n') {
+void insertChar(Textbox* box, char c, u32 idx) {
+	u32 len = TextLength(box->text);
+	if (len >= box->size - 1) {
+		return;
+	}
+
+	for (u32 i = len + 1; i > idx; i--) {
+		box->text[i] = box->text[i - 1];
+	}
+	box->text[idx] = c;
+}
+
+void removeChar(Textbox* box, u32 idx) {
+	u32 len = TextLength(box->text);
+
+	if (len <= 0) {
+		return;
+	}
+
+	for (u32 i = idx; i < len - 1; i++) {
+		box->text[i] = box->text[i + 1];
+	}
+	box->text[len - 1] = '\0';
+}
+
+u32 lineIndex(i32 start, char* buffer) {
+	u32 width = 0;
+	while (start >= 0 && buffer[start] != '\n') {
 		width++;
 		start--;
 	}
@@ -10,47 +35,87 @@ i32 lineIndex(i32 start, Textbox* box) {
 	return width;
 }
 
-void cursorLeft(TextField* notes) {
-	Textbox box = notes->box;
-	if (notes->idx > 0) {
-		char buff[2];
-		buff[0] = box.text[notes->idx - 1];
-		buff[1] = '\0';
-		i32 char_width = MeasureText(buff, box.font_size);
-		notes->cursor_pos.x -= char_width + 4;
-		notes->idx--;
+u32 lineWidth(i32 start, char* buffer) {
+	while (buffer[start] != '\n' && buffer[start] != '\0') {
+		start++;
+	}
 
-		if (notes->cursor_pos.x < 0) { // go up a line
-			notes->cursor_pos.y -= box.font_size;
-			notes->cursor_pos.x = 0;
-			i32 i = notes->idx - 1;
-			while (i >= 0 && box.text[i] != '\n') {
-				buff[0] = box.text[i];
-				buff[1] = '\0';
-				notes->cursor_pos.x += MeasureText(buff, box.font_size) + 4;
+	return lineIndex(start - 1, buffer);
+}
 
-				i--;
-			}
+void cursorLeft(TextField* notes, char del) {
+	if (notes->buffer_idx <= 0) {
+		return;
+	}
+	notes->buffer_idx--;
+	printf("%c\n", notes->buffer[notes->buffer_idx]);
+
+	char buff[2];
+	if (del != '\0') {
+		buff[0] = del;
+	}
+	else {
+		buff[0] = notes->buffer[notes->buffer_idx];
+	}
+	
+	buff[1] = '\0';
+	i32 char_width = MeasureText(buff, notes->box.font_size);
+	notes->cursor_pos.x -= char_width + 4;
+
+	if (notes->cursor_pos.x < 0) { // go up a line
+		notes->cursor_pos.y -= notes->box.font_size;
+		notes->cursor_pos.x = 0;
+		i32 i = notes->buffer_idx - 1;
+		bool user_defined = lineWidth(notes->buffer_idx, notes->buffer) < notes->box.max_width - 1;
+		printf("%d\n", notes->box.max_width);
+		printf("w: %d, u: %d\n", lineWidth(notes->buffer_idx, notes->buffer), user_defined);
+		while (i >= 0 && notes->buffer[i] != '\n') {
+			buff[0] = notes->buffer[i];
+			buff[1] = '\0';
+			notes->cursor_pos.x += MeasureText(buff, notes->box.font_size) + 4;
+
+			i--;
+		}
+		if (!user_defined && del == '\0') {
+			notes->idx++;
+		}
+		else if (!user_defined) {
+			cursorLeft(notes, '\0');
 		}
 	}
+
+	printf("buff: %d\n", notes->buffer_idx);
 }
 
 void cursorRight(TextField* notes) {
-	Textbox box = notes->box;
-	if (box.text[notes->idx] != '\n' &&
-			notes->idx < box.size) {
-		char buff[2];
-		buff[0] = box.text[notes->idx];
-		buff[1] = '\0';
-		i32 char_width = MeasureText(buff, box.font_size);
-		notes->cursor_pos.x += char_width + 4;
-		notes->idx++;
+	if (notes->buffer[notes->buffer_idx] == '\0') {
+		return;
 	}
-	else if (notes->idx < box.size) {
-		notes->idx++;
+	if (notes->buffer[notes->buffer_idx] == '\n') {
 		notes->cursor_pos.x = 0;
-		notes->cursor_pos.y += box.font_size;
+		notes->cursor_pos.y += notes->box.font_size;
+
+		bool user_defined = lineWidth(notes->buffer_idx, notes->buffer) < notes->box.max_width - 1;
+		// printf("w: %d, u: %d\n", lineWidth(notes->buffer_idx, notes->buffer), user_defined);
+
+		printf("here\n");
+		notes->buffer_idx++;
+		if (!user_defined) {
+			notes->idx--;
+		}
+
 	}
+	else {
+		char buff[2];
+		buff[0] = notes->buffer[notes->buffer_idx];
+		buff[1] = '\0';
+		i32 char_width = MeasureText(buff, notes->box.font_size);
+		notes->cursor_pos.x += char_width + 4;
+		notes->buffer_idx++;
+	}
+
+	printf("%c\n", notes->buffer[notes->buffer_idx]);
+	printf("buff: %d\n", notes->buffer_idx);
 }
 
 void drawTextField(TextField* notes, Vector2 pos) {
@@ -62,7 +127,39 @@ void drawTextField(TextField* notes, Vector2 pos) {
 	};
 	
 	DrawLineV(start_pos, end_pos, WHITE);
-	DrawTextEx(notes->box.font, notes->box.text, pos, notes->box.font_size, 4, WHITE);
+	DrawTextEx(notes->box.font, notes->buffer, pos, notes->box.font_size, 4, WHITE);
+}
+
+void fillBuffer(TextField* notes) {
+	// clear buffer
+	u32 j = 0;
+	while (notes->buffer[j] != '\0') {
+		notes->buffer[j] = '\0';
+		j++;
+	}
+	// fill buffer w/ new values
+	j = 0;
+	u32 i = 0;
+	u32 width = 0;
+
+	while (notes->box.text[i] != '\0') {
+		width++;
+		if (notes->box.text[i] == '\n') {
+			// printf("new line");
+			width = 0;
+		}
+		else if (width >= notes->box.max_width) {
+			// printf("line wrap\n");
+			notes->buffer[j] = '\n';
+			width = 0;
+			j++;
+		}
+		notes->buffer[j] = notes->box.text[i];
+
+		j++;
+		i++;
+	}
+	notes->buffer[j] = '\0';
 }
 
 void takeNotes(TextField* notes) {
@@ -70,25 +167,36 @@ void takeNotes(TextField* notes) {
 	in = GetCharPressed();
 
 	if (in != 0 && TextLength(notes->box.text) < notes->box.size - 1) { // chars
-		notes->box.text[TextLength(notes->box.text) + 1] = notes->box.text[TextLength(notes->box.text)];
-		notes->box.text[TextLength(notes->box.text)] = in;
-		if (lineIndex(
-					TextLength(notes->box.text), 
-					&notes->box
-				) >= notes->box.max_width) {
-			notes->box.text[TextLength(notes->box.text) + 1] = notes->box.text[TextLength(notes->box.text)];
-			notes->box.text[TextLength(notes->box.text)] = '\n';
+		insertChar(&(notes->box), in, notes->idx);
+		fillBuffer(notes);
+		cursorRight(notes);
+		notes->idx++;
+
+		bool user_defined = lineWidth(notes->buffer_idx - 1, notes->buffer) < notes->box.max_width - 1;
+		if (!user_defined && notes->buffer[notes->buffer_idx - 1] == '\n') {
+			notes->idx++;
+		}
+
+		if (notes->cursor_pos.x == 0) {
 			cursorRight(notes);
 		}
-		cursorRight(notes);
+		printf("idx: %d\n", notes->idx);
 	}
 	else if (IsKeyPressed(KEY_ENTER) && TextLength(notes->box.text) < notes->box.size - 1) { // \n
-		notes->box.text[TextLength(notes->box.text) + 1] = notes->box.text[TextLength(notes->box.text)];
-		notes->box.text[TextLength(notes->box.text)] = '\n';
+		insertChar(&(notes->box), '\n', notes->idx);
+		fillBuffer(notes);
 		cursorRight(notes);
+		notes->idx++;
+
+		printf("idx: %d\n", notes->idx);
 	}
 	else if (IsKeyPressed(KEY_BACKSPACE) && TextLength(notes->box.text) > 0) { // backspace
-		cursorLeft(notes);
-		notes->box.text[TextLength(notes->box.text) - 1] = '\0';
+		notes->idx--;
+		char del = notes->box.text[notes->idx];
+
+		removeChar(&(notes->box), notes->idx);
+		fillBuffer(notes);
+		cursorLeft(notes, del);
+		printf("idx: %d\n", notes->idx);
 	}
 }

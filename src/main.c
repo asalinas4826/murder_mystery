@@ -103,10 +103,15 @@ int main() {
 	Vector2 c_pos = {0.0f, 0.0f};
 	TextField notes = {
 		box,
+		malloc((box.size + 25) * sizeof(char)), // char buffer
 		0, // cursor idx
+		0, // buffer idx
 		3, // cursor offset
 		c_pos // cursor position
 	};
+	for (u32 i = 0; i < box.size + 25; i++) {
+		notes.buffer[i] = '\0';
+	}
 
 	// MAIN GAME LOOP
 	i32 frames = 0;
@@ -133,9 +138,16 @@ int main() {
 				// takeNotes(&box);
 				if (IsKeyPressed(KEY_RIGHT)) {
 					cursorRight(&notes);
+					if (notes.idx < notes.box.size && 
+							notes.box.text[notes.idx] != '\0') {
+						notes.idx++;
+						printf("idx: %d\n", notes.idx);
+					}
 				}
 				else if (IsKeyPressed(KEY_LEFT)) {
-					cursorLeft(&notes);
+					cursorLeft(&notes, '\0');
+					if (notes.idx > 0) notes.idx--;
+					printf("idx: %d\n", notes.idx);
 				}
 				else {
 					takeNotes(&notes);
@@ -147,7 +159,6 @@ int main() {
 		}
 
 		drawTextField(&notes, Vector2Scale(notes_pos, scale));
-		// DrawTextEx(notes.font, notes.text, Vector2Scale(notes_pos, scale), notes.font_size, 4, WHITE); 
 
 		// GET INPUT MODE
 		if (IsKeyPressed(KEY_I)) {
@@ -163,7 +174,8 @@ int main() {
 	}
 
 	// CLEAN UP
-	// free(notes.box.text);
+	free(notes.box.text);
+	free(notes.buffer);
 	UnloadTexture(scene.tex);
 	CloseWindow();
 	return 0;
