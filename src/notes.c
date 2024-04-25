@@ -48,7 +48,7 @@ void cursorLeft(TextField* notes, char del) {
 		return;
 	}
 	notes->buffer_idx--;
-	printf("%c\n", notes->buffer[notes->buffer_idx]);
+	// printf("%c\n", notes->buffer[notes->buffer_idx]);
 
 	char buff[2];
 	if (del != '\0') {
@@ -67,8 +67,8 @@ void cursorLeft(TextField* notes, char del) {
 		notes->cursor_pos.x = 0;
 		i32 i = notes->buffer_idx - 1;
 		bool user_defined = lineWidth(notes->buffer_idx, notes->buffer) < notes->box.max_width - 1;
-		printf("%d\n", notes->box.max_width);
-		printf("w: %d, u: %d\n", lineWidth(notes->buffer_idx, notes->buffer), user_defined);
+		// printf("%d\n", notes->box.max_width);
+		// printf("w: %d, u: %d\n", lineWidth(notes->buffer_idx, notes->buffer), user_defined);
 		while (i >= 0 && notes->buffer[i] != '\n') {
 			buff[0] = notes->buffer[i];
 			buff[1] = '\0';
@@ -84,7 +84,7 @@ void cursorLeft(TextField* notes, char del) {
 		}
 	}
 
-	printf("buff: %d\n", notes->buffer_idx);
+	// printf("buff: %d\n", notes->buffer_idx);
 }
 
 void cursorRight(TextField* notes) {
@@ -98,7 +98,6 @@ void cursorRight(TextField* notes) {
 		bool user_defined = lineWidth(notes->buffer_idx, notes->buffer) < notes->box.max_width - 1;
 		// printf("w: %d, u: %d\n", lineWidth(notes->buffer_idx, notes->buffer), user_defined);
 
-		printf("here\n");
 		notes->buffer_idx++;
 		if (!user_defined) {
 			notes->idx--;
@@ -114,8 +113,8 @@ void cursorRight(TextField* notes) {
 		notes->buffer_idx++;
 	}
 
-	printf("%c\n", notes->buffer[notes->buffer_idx]);
-	printf("buff: %d\n", notes->buffer_idx);
+	// printf("%c\n", notes->buffer[notes->buffer_idx]);
+	// printf("buff: %d\n", notes->buffer_idx);
 }
 
 void drawTextField(TextField* notes, Vector2 pos) {
@@ -180,7 +179,7 @@ void takeNotes(TextField* notes) {
 		if (notes->cursor_pos.x == 0) {
 			cursorRight(notes);
 		}
-		printf("idx: %d\n", notes->idx);
+		// printf("idx: %d\n", notes->idx);
 	}
 	else if (IsKeyPressed(KEY_ENTER) && TextLength(notes->box.text) < notes->box.size - 1) { // \n
 		insertChar(&(notes->box), '\n', notes->idx);
@@ -188,7 +187,7 @@ void takeNotes(TextField* notes) {
 		cursorRight(notes);
 		notes->idx++;
 
-		printf("idx: %d\n", notes->idx);
+		// printf("idx: %d\n", notes->idx);
 	}
 	else if (IsKeyPressed(KEY_BACKSPACE) && TextLength(notes->box.text) > 0) { // backspace
 		notes->idx--;
@@ -197,6 +196,6 @@ void takeNotes(TextField* notes) {
 		removeChar(&(notes->box), notes->idx);
 		fillBuffer(notes);
 		cursorLeft(notes, del);
-		printf("idx: %d\n", notes->idx);
+		// printf("idx: %d\n", notes->idx);
 	}
 }

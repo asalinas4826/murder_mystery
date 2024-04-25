@@ -10,4 +10,15 @@ typedef struct {
 	f32 font_size;
 } Textbox;
 
+typedef struct {
+	Textbox box;
+	char* buffer;
+} DialogueBox;
+
+typedef struct {
+	char* text;
+	Rectangle bounds_one;
+	Rectangle bounds_two;
+} Sentence;
+
 #endif

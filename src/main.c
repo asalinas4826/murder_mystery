@@ -6,6 +6,7 @@
 #include "sprite.h"
 #include "player.h"
 #include "notes.h"
+#include "dialogue.h"
 
 #define INITIAL_HEIGHT 640
 #define FLOOR_HEIGHT 32
@@ -81,23 +82,16 @@ int main() {
 	Vector2 origin = {0.0f, 0.0f};
 	Vector2 notes_pos = {185, 16};
 
+	// INITIALIZE NOTES COMPONENT
 	Textbox box = {
-		malloc(200 * sizeof(char)),
-		200,
-		0,
-		GetScreenWidth() / 60,
-		GetFontDefault(),
-		20,
+		malloc(200 * sizeof(char)), 
+		200, // total size allocated
+		0, // starting index
+		GetScreenWidth() / 60, // max line width
+		GetFontDefault(), // font
+		20, // font size
 	};
 	box.text[0] = '\0';
-	// Textbox box = {
-	// 	"hi, this is a box \nmes\nsage", // char[]
-	// 	27, // total size allocated, including '\0'
-	// 	0, // current line width
-	// 	GetScreenWidth() / 60, // max line width
-	// 	GetFontDefault(), // font
-	// 	20 // font_size
-	// };
 	SetTextLineSpacing(20);
 
 	Vector2 c_pos = {0.0f, 0.0f};
@@ -112,6 +106,10 @@ int main() {
 	for (u32 i = 0; i < box.size + 25; i++) {
 		notes.buffer[i] = '\0';
 	}
+
+	// LOAD DIALOGUE
+	if (loadDialogue("./example.txt")) return 1;
+	printf("dialogue loaded?\n");
 
 	// MAIN GAME LOOP
 	i32 frames = 0;
@@ -135,19 +133,18 @@ int main() {
 				break;
 			}
 			case NOTES: {
-				// takeNotes(&box);
 				if (IsKeyPressed(KEY_RIGHT)) {
 					cursorRight(&notes);
 					if (notes.idx < notes.box.size && 
 							notes.box.text[notes.idx] != '\0') {
 						notes.idx++;
-						printf("idx: %d\n", notes.idx);
+						// printf("idx: %d\n", notes.idx);
 					}
 				}
 				else if (IsKeyPressed(KEY_LEFT)) {
 					cursorLeft(&notes, '\0');
 					if (notes.idx > 0) notes.idx--;
-					printf("idx: %d\n", notes.idx);
+					// printf("idx: %d\n", notes.idx);
 				}
 				else {
 					takeNotes(&notes);

@@ -1,0 +1,17 @@
+text-scroll
+
+- PROBLEM: display NPC text at bottom of screen, with
+	scrolling and write it to the screen one word at a time.
+	Also, the player must be able to select entire sentences 
+	with the mouse and save them into a list of witness 
+	statements.
+
+- SOLUTION: parse the textbox into a list of sentences,
+	separating by '.'. Fill the textbox GUI w/ as many sentences as possible, and use MeasureText() to generate bounding
+	boxes for the sentences. When clicked, the sentence will be
+	saved into a witness statements list. Press return to load
+	next couple of sentences.
+
+- IMPLEMENTATION DETAILS: each sentence will have a max of 2
+	bounding boxes for case where a sentence wraps the line.
+

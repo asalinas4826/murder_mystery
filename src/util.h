@@ -8,6 +8,8 @@
 #include <raylib.h>
 #include <raymath.h>
 
+#include "dyn_array.h"
+
 #define ASSERT(_e, ...) if (!(_e)) { fprintf(stderr, __VA_ARGS__); exit(1); }
 
 #define ASPECT_RATIO 16.0f / 9.0f

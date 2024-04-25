@@ -55,9 +55,10 @@ UI
 Todos
 - QOL: better note-taking
 	- scale textbox char width w/ screen size
-	- better backspace for note-taking
-	- cursor during note-taking
 	- find good font
+	- ctl + LEFT/RIGHT goes forward or backward one word
+	- UP and DOWN
+	- move cursor with mouse
 - CORE: make an interactable room
 	- objects can be clicked on and show text
 	- NPC you can talk to
