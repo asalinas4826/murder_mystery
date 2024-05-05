@@ -1,28 +1,27 @@
-#ifndef PLAYER_H
-#define PLAYER_H
+#ifndef ENTITY_H
+#define ENTITY_H
 
-#include "entity.h"
 #include "util.h"
 #include "sprite.h"
+
+#define DIALOGUE_BUFF_SIZE 1024
 
 typedef struct {
 	Sprite idle;
 	Sprite walk;
 	Vector2 pos;
 	bool flipped;
-} Player;
+	char dialogue[DIALOGUE_BUFF_SIZE];
+} Entity;
 
-
-void drawPlayerIdle(Player* player, 
+void drawEntityIdle(Entity* e, 
 										Sprite* scene, 
 										f32 scale, 
 										i32 frame);
 
-void playerMove(Player* player, 
+void entityMove(Entity* e, 
 								Sprite* scene, 
 								f32 scale, 
 								i32 frame);
-
-bool isNextTo(Player* player, Entity* entity);
 
 #endif

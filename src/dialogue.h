@@ -3,8 +3,9 @@
 
 #include "util.h"
 #include "textbox.h"
+#include "entity.h"
 
-int loadDialogue(const char* path);
+int loadDialogue(const char* path, Entity* e);
 void parseDialogue(char* buffer, usize bytes_read, Sentence* sentence);
 
 #endif

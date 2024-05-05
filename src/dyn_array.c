@@ -5,7 +5,7 @@ void freeDynArray(DynArray* arr) {
   arr->head = NULL;
 }
 
-void grow(DynArray* arr) {
+static void grow(DynArray* arr) {
   void* old_head = arr->head;
   arr->head = malloc(arr->capacity * 2 * arr->elem_size);
   memcpy(arr->head, old_head, arr->size * arr->elem_size);

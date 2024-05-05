@@ -13,7 +13,8 @@
 
 enum mode {
 	MOVE,
-	NOTES
+	NOTES,
+	DIALOGUE
 };
 
 int main() {
@@ -29,24 +30,36 @@ int main() {
 	SetExitKey(KEY_NULL);
 
 	// LOAD TEXTURES
+	DYN_ARRAY(textures, 0);
 	Texture2D scene_texture = LoadTexture("./resources/ui_demo.png");
 	ASSERT(
 			IsTextureReady(scene_texture),
 			"Failed to load texture. \n"
 	);
+	PUSH(textures, scene_texture, sizeof(Texture2D));
 
 	Texture2D player_texture = LoadTexture("./resources/butler.png");
 	ASSERT(
 			IsTextureReady(player_texture),
 			"Failed to load texture. \n"
 	);
+	PUSH(textures, player_texture, sizeof(Texture2D));
 
 	Texture2D player_walk_texture = LoadTexture("./resources/butler_walk.png");
 	ASSERT(
 			IsTextureReady(player_walk_texture),
 			"Failed to load texture. \n"
 	);
+	PUSH(textures, player_walk_texture, sizeof(Texture2D));
 
+	Texture2D npc_texture = LoadTexture("./resources/mr_rochester.png");
+	ASSERT(
+		IsTextureReady(npc_texture),
+		"Failed to load texture. \n"
+	);
+	PUSH(textures, npc_texture, sizeof(Texture2D));
+
+	// SCENE SETUP
 	Sprite scene = {
 		scene_texture,
 		1,
@@ -54,6 +67,23 @@ int main() {
 		135
 	};
 
+	Sprite npc_sprite = {
+		npc_texture,
+		1,
+		19,
+		27
+	};
+
+	Vector2 n_pos = {60.0f, scene.height - npc_sprite.height - FLOOR_HEIGHT};
+	Entity mr_rochester = {
+		npc_sprite,
+		npc_sprite,
+		n_pos,
+		false,
+	};
+
+
+	// PLAYER SETUP
 	Sprite player_sprite = {
 		player_texture,
 		1,
@@ -108,8 +138,7 @@ int main() {
 	}
 
 	// LOAD DIALOGUE
-	if (loadDialogue("./example.txt")) return 1;
-	printf("dialogue loaded?\n");
+	if (loadDialogue("./example.txt", &mr_rochester)) return 1;
 
 	// MAIN GAME LOOP
 	i32 frames = 0;
@@ -125,6 +154,8 @@ int main() {
 		BeginDrawing();
 
 		DrawBackground(&scene, origin, screen_height, screen_width, scale, frames);
+
+		drawEntityIdle(&mr_rochester, &scene, scale, frames);
 
 		// DRAW PLAYER ACTION
 		switch (mode) {
@@ -152,6 +183,14 @@ int main() {
 				drawPlayerIdle(&player, &scene, scale, frames);
 				break;
 			}
+			case DIALOGUE: {
+				drawPlayerIdle(&player, &scene, scale, frames);
+				for (usize i = 0; i < DIALOGUE_BUFF_SIZE; i++) {
+					printf("%c", mr_rochester.dialogue[i]);
+				}
+				printf("\n");
+				break;
+			}
 			default: {}
 		}
 
@@ -164,6 +203,15 @@ int main() {
 		else if (IsKeyPressed(KEY_ESCAPE)) {
 			mode = MOVE;
 		}
+		else if (mode == MOVE &&
+				isNextTo(&player, &mr_rochester) && 
+				IsKeyPressed(KEY_E)) {
+			mode = DIALOGUE;
+		}
+		else if (mode == DIALOGUE &&
+				IsKeyPressed(KEY_ESCAPE)) {
+			mode = MOVE;
+		}
 
 		// END DRAWING AND INCREMENT FRAME COUNT
 		EndDrawing();
@@ -173,7 +221,10 @@ int main() {
 	// CLEAN UP
 	free(notes.box.text);
 	free(notes.buffer);
-	UnloadTexture(scene.tex);
+	for (u32 i = 0; i < textures.size; i++) {
+		UnloadTexture(GET(textures, Texture2D, i));
+	}
+	FREE(textures);
 	CloseWindow();
 	return 0;
 }

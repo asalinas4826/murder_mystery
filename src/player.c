@@ -23,3 +23,11 @@ void playerMove(Player* player, Sprite* scene, f32 scale, i32 frame) {
 		drawPlayerIdle(player, scene, scale, frame);
 	}
 }
+
+bool isNextTo(Player* player, Entity* entity) {
+	if ((player->pos.x + player->idle.width > entity->pos.x) && 
+			(player->pos.x < entity->pos.x + entity->idle.width)) {
+		return true;
+	}
+	return false;
+}

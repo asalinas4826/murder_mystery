@@ -1,6 +1,6 @@
 #include "notes.h"
 
-void insertChar(Textbox* box, char c, u32 idx) {
+static void insertChar(Textbox* box, char c, u32 idx) {
 	u32 len = TextLength(box->text);
 	if (len >= box->size - 1) {
 		return;
@@ -12,7 +12,7 @@ void insertChar(Textbox* box, char c, u32 idx) {
 	box->text[idx] = c;
 }
 
-void removeChar(Textbox* box, u32 idx) {
+static void removeChar(Textbox* box, u32 idx) {
 	u32 len = TextLength(box->text);
 
 	if (len <= 0) {
@@ -25,7 +25,7 @@ void removeChar(Textbox* box, u32 idx) {
 	box->text[len - 1] = '\0';
 }
 
-u32 lineIndex(i32 start, char* buffer) {
+static u32 lineIndex(i32 start, char* buffer) {
 	u32 width = 0;
 	while (start >= 0 && buffer[start] != '\n') {
 		width++;
@@ -35,7 +35,7 @@ u32 lineIndex(i32 start, char* buffer) {
 	return width;
 }
 
-u32 lineWidth(i32 start, char* buffer) {
+static u32 lineWidth(i32 start, char* buffer) {
 	while (buffer[start] != '\n' && buffer[start] != '\0') {
 		start++;
 	}
@@ -129,7 +129,7 @@ void drawTextField(TextField* notes, Vector2 pos) {
 	DrawTextEx(notes->box.font, notes->buffer, pos, notes->box.font_size, 4, WHITE);
 }
 
-void fillBuffer(TextField* notes) {
+static void fillBuffer(TextField* notes) {
 	// clear buffer
 	u32 j = 0;
 	while (notes->buffer[j] != '\0') {

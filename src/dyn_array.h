@@ -41,7 +41,6 @@ typedef struct {
 } DynArray;
 
 void freeDynArray(DynArray* arr);
-void grow(DynArray* arr);
 void* valAt(DynArray* arr, uint32_t idx);
 void pushBack(DynArray* arr, void* value, size_t value_size);
 int push(DynArray* arr, void* value, size_t value_size, size_t idx);
