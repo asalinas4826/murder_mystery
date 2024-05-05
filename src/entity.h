@@ -11,6 +11,7 @@ typedef struct {
 	Sprite walk;
 	Vector2 pos;
 	bool flipped;
+	u16 id;
 	char dialogue[DIALOGUE_BUFF_SIZE];
 } Entity;
 

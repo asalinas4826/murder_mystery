@@ -10,6 +10,7 @@ typedef struct {
 	Sprite walk;
 	Vector2 pos;
 	bool flipped;
+	u16 next_to_id;
 } Player;
 
 

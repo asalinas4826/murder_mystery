@@ -1,8 +1,2 @@
-need to cleanup every texture, not just the first one
-- setup some kind of world object that you can just iterate through and
-	unload everything
-
-when in dialogue mode, no way to tell which entity you're dialoguing with
-- aka breaks w/ > 1 entity
 
 

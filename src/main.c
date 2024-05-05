@@ -29,8 +29,9 @@ int main() {
 	SetTargetFPS(30);
 	SetExitKey(KEY_NULL);
 
+
 	// LOAD TEXTURES
-	DYN_ARRAY(textures, 0);
+	DYN_ARRAY(textures, sizeof(Texture2D));
 	Texture2D scene_texture = LoadTexture("./resources/ui_demo.png");
 	ASSERT(
 			IsTextureReady(scene_texture),
@@ -59,86 +60,105 @@ int main() {
 	);
 	PUSH(textures, npc_texture, sizeof(Texture2D));
 
+
 	// SCENE SETUP
 	Sprite scene = {
-		scene_texture,
-		1,
-		240,
-		135
+		.tex = scene_texture,
+		.fps = 1,
+		.width = 240,
+		.height = 135
 	};
 
 	Sprite npc_sprite = {
-		npc_texture,
-		1,
-		19,
-		27
+		.tex = npc_texture,
+		.fps = 1,
+		.width = 19,
+		.height = 27
 	};
 
+	DYN_ARRAY(entity_list, sizeof(Entity));
 	Vector2 n_pos = {60.0f, scene.height - npc_sprite.height - FLOOR_HEIGHT};
 	Entity mr_rochester = {
-		npc_sprite,
-		npc_sprite,
-		n_pos,
-		false,
+		.idle = npc_sprite,
+		.walk = npc_sprite,
+		.pos = n_pos,
+		.flipped = false,
 	};
+	if (loadDialogue("./example.txt", &mr_rochester)) return 1;
+	PUSH(entity_list, mr_rochester, sizeof(Entity));
+	
+	Vector2 n_pos_2 = {120.0f, scene.height - npc_sprite.height - FLOOR_HEIGHT};
+	Entity old_man = {
+		.idle = npc_sprite,
+		.walk = npc_sprite,
+		.pos = n_pos_2,
+		.flipped = false,
+	};
+	if (loadDialogue("./example_2.txt", &old_man)) return 1;
+	PUSH(entity_list, old_man, sizeof(Entity));
+
+	for (u16 i = 0; i < entity_list.size; i++) {
+		(GET(entity_list, Entity, i)).id = i;
+	}
 
 
 	// PLAYER SETUP
 	Sprite player_sprite = {
-		player_texture,
-		1,
-		25,
-		35
+		.tex = player_texture,
+		.fps = 1,
+		.width = 25,
+		.height = 35
 	};
 
 	Sprite player_walk = {
-		player_walk_texture,
-		5,
-		25,
-		35
+		.tex = player_walk_texture,
+		.fps = 5,
+		.width = 25,
+		.height = 35
 	};
 
 	Vector2 p_pos = {10.0f, scene.height - player_sprite.height - FLOOR_HEIGHT};
 	Player player = {
-		player_sprite,
-		player_walk,
-		p_pos,
-		false
+		.idle = player_sprite,
+		.walk = player_walk,
+		.pos = p_pos,
+		.flipped = false,
+		.next_to_id = 0
 	};
 	
+
 	// INITIALIZE VARIABLES FOR LOOP
 	enum mode mode = MOVE;
 
 	Vector2 origin = {0.0f, 0.0f};
 	Vector2 notes_pos = {185, 16};
 
+
 	// INITIALIZE NOTES COMPONENT
 	Textbox box = {
-		malloc(200 * sizeof(char)), 
-		200, // total size allocated
-		0, // starting index
-		GetScreenWidth() / 60, // max line width
-		GetFontDefault(), // font
-		20, // font size
+		.text = malloc(200 * sizeof(char)), 
+		.size = 200, // total size allocated
+		.width = 0, // starting index
+		.max_width = GetScreenWidth() / 60,
+		.font = GetFontDefault(),
+		.font_size = 20,
 	};
 	box.text[0] = '\0';
 	SetTextLineSpacing(20);
 
 	Vector2 c_pos = {0.0f, 0.0f};
 	TextField notes = {
-		box,
-		malloc((box.size + 25) * sizeof(char)), // char buffer
-		0, // cursor idx
-		0, // buffer idx
-		3, // cursor offset
-		c_pos // cursor position
+		.box = box,
+		.buffer = malloc((box.size + 25) * sizeof(char)), // char buffer
+		.idx = 0, // cursor idx
+		.buffer_idx = 0,
+		.cursor_offset = 3,
+		.cursor_pos = c_pos
 	};
 	for (u32 i = 0; i < box.size + 25; i++) {
 		notes.buffer[i] = '\0';
 	}
 
-	// LOAD DIALOGUE
-	if (loadDialogue("./example.txt", &mr_rochester)) return 1;
 
 	// MAIN GAME LOOP
 	i32 frames = 0;
@@ -155,7 +175,10 @@ int main() {
 
 		DrawBackground(&scene, origin, screen_height, screen_width, scale, frames);
 
-		drawEntityIdle(&mr_rochester, &scene, scale, frames);
+		for (u16 i = 0; i < entity_list.size; i++) {
+			drawEntityIdle(GET_PTR(entity_list, Entity, i), &scene, scale, frames);
+		}
+		// drawEntityIdle(&mr_rochester, &scene, scale, frames);
 
 		// DRAW PLAYER ACTION
 		switch (mode) {
@@ -185,10 +208,17 @@ int main() {
 			}
 			case DIALOGUE: {
 				drawPlayerIdle(&player, &scene, scale, frames);
-				for (usize i = 0; i < DIALOGUE_BUFF_SIZE; i++) {
-					printf("%c", mr_rochester.dialogue[i]);
+				printf("%d\n", player.next_to_id);
+				for (u16 i = 0; i < entity_list.size; i++) {
+					Entity* e = GET_PTR(entity_list, Entity, i);
+					if (e->id == player.next_to_id) {
+						for (u16 j = 0; j < DIALOGUE_BUFF_SIZE; j++) {
+							printf("%c", e->dialogue[j]);
+						}
+
+						printf("\n");
+					}
 				}
-				printf("\n");
 				break;
 			}
 			default: {}
@@ -204,9 +234,13 @@ int main() {
 			mode = MOVE;
 		}
 		else if (mode == MOVE &&
-				isNextTo(&player, &mr_rochester) && 
 				IsKeyPressed(KEY_E)) {
-			mode = DIALOGUE;
+			for (u16 i = 0; i < entity_list.size; i++) {
+				if (isNextTo(&player, GET_PTR(entity_list, Entity, i))) {
+					mode = DIALOGUE;
+					player.next_to_id = (GET(entity_list, Entity, i)).id;
+				}
+			}
 		}
 		else if (mode == DIALOGUE &&
 				IsKeyPressed(KEY_ESCAPE)) {
@@ -218,6 +252,7 @@ int main() {
 		frames++;
 	}
 
+
 	// CLEAN UP
 	free(notes.box.text);
 	free(notes.buffer);
@@ -225,6 +260,7 @@ int main() {
 		UnloadTexture(GET(textures, Texture2D, i));
 	}
 	FREE(textures);
+	FREE(entity_list);
 	CloseWindow();
 	return 0;
 }

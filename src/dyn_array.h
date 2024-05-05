@@ -1,8 +1,7 @@
 #ifndef DYN_ARRAY
 #define DYN_ARRAY(arr, val_size) \
   DynArray arr; \
-  void* val_ptr = NULL; \
-  initializeDynArray(&arr, val_ptr, val_size, 0); \
+  initializeDynArray(&arr, NULL, val_size, 0); \
   
 #define DYN_ARRAY_INIT(arr, value, val_size, count) \
   DynArray arr; \
