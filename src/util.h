@@ -14,6 +14,8 @@
 
 #define ASPECT_RATIO 16.0f / 9.0f
 #define MOVE_SPEED 1
+#define INITIAL_HEIGHT 640
+#define FLOOR_HEIGHT 32
 
 typedef float    f32;
 typedef double   f64;

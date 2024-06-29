@@ -8,17 +8,13 @@
 #include "notes.h"
 #include "dialogue.h"
 
-#define INITIAL_HEIGHT 640
-#define FLOOR_HEIGHT 32
-
 enum mode {
 	MOVE,
 	NOTES,
 	DIALOGUE
 };
 
-int main() {
-	// SET UP WINDOW
+void setUpWindow() {
 	InitWindow(INITIAL_HEIGHT * ASPECT_RATIO, INITIAL_HEIGHT, "murder game");
 	ASSERT(
 		IsWindowReady(),
@@ -28,40 +24,16 @@ int main() {
 
 	SetTargetFPS(30);
 	SetExitKey(KEY_NULL);
+}
 
-
-	// LOAD TEXTURES
-	DYN_ARRAY(textures, sizeof(Texture2D));
-	Texture2D scene_texture = LoadTexture("./resources/ui_demo.png");
+Sprite loadScene(DynArray* textures, char* pathname) {
+	Texture2D scene_texture = LoadTexture(pathname);
 	ASSERT(
 			IsTextureReady(scene_texture),
 			"Failed to load texture. \n"
 	);
-	PUSH(textures, scene_texture, sizeof(Texture2D));
+	PUSH(*textures, scene_texture, sizeof(Texture2D));
 
-	Texture2D player_texture = LoadTexture("./resources/butler.png");
-	ASSERT(
-			IsTextureReady(player_texture),
-			"Failed to load texture. \n"
-	);
-	PUSH(textures, player_texture, sizeof(Texture2D));
-
-	Texture2D player_walk_texture = LoadTexture("./resources/butler_walk.png");
-	ASSERT(
-			IsTextureReady(player_walk_texture),
-			"Failed to load texture. \n"
-	);
-	PUSH(textures, player_walk_texture, sizeof(Texture2D));
-
-	Texture2D npc_texture = LoadTexture("./resources/mr_rochester.png");
-	ASSERT(
-		IsTextureReady(npc_texture),
-		"Failed to load texture. \n"
-	);
-	PUSH(textures, npc_texture, sizeof(Texture2D));
-
-
-	// SCENE SETUP
 	Sprite scene = {
 		.tex = scene_texture,
 		.fps = 1,
@@ -69,31 +41,51 @@ int main() {
 		.height = 135
 	};
 
-	Sprite npc_sprite = {
-		.tex = npc_texture,
+	return scene;
+}
+
+i32 getFloorPos(i32 scene_height) {
+	return scene_height - FLOOR_HEIGHT;
+}
+
+int main() {
+	setUpWindow();
+
+	DYN_ARRAY(textures, sizeof(Texture2D));
+	Sprite scene = loadScene(&textures, "./resources/ui_demo.png");
+
+	i32 floor_pos = getFloorPos(scene.height);
+
+	Vector2 p_pos = {10.0f, floor_pos};
+	Player player = loadPlayer(&textures, p_pos);
+
+	Vector2 rochester_pos = {60.0f, floor_pos};
+	EntityParams rochester_params = {
 		.fps = 1,
 		.width = 19,
-		.height = 27
+		.height = 27,
+		.pos = rochester_pos,
+		.flipped = false,
+		.path_to_texture = "./resources/mr_rochester.png"
 	};
+	Entity mr_rochester = loadStaticEntity(&textures, &rochester_params);
+
+	Vector2 n_pos = {120.0f, floor_pos};
+	EntityParams old_man_params = {
+		.fps = 1,
+		.width = 19,
+		.height = 27,
+		.pos = n_pos,
+		.flipped = true,
+		.path_to_texture = "./resources/mr_rochester.png"
+	};
+	Entity old_man = loadStaticEntity(&textures, &old_man_params);
 
 	DYN_ARRAY(entity_list, sizeof(Entity));
-	Vector2 n_pos = {60.0f, scene.height - npc_sprite.height - FLOOR_HEIGHT};
-	Entity mr_rochester = {
-		.idle = npc_sprite,
-		.walk = npc_sprite,
-		.pos = n_pos,
-		.flipped = false,
-	};
+
 	if (loadDialogue("./example.txt", &mr_rochester)) return 1;
 	PUSH(entity_list, mr_rochester, sizeof(Entity));
-	
-	Vector2 n_pos_2 = {120.0f, scene.height - npc_sprite.height - FLOOR_HEIGHT};
-	Entity old_man = {
-		.idle = npc_sprite,
-		.walk = npc_sprite,
-		.pos = n_pos_2,
-		.flipped = false,
-	};
+
 	if (loadDialogue("./example_2.txt", &old_man)) return 1;
 	PUSH(entity_list, old_man, sizeof(Entity));
 
@@ -101,31 +93,6 @@ int main() {
 		(GET(entity_list, Entity, i)).id = i;
 	}
 
-
-	// PLAYER SETUP
-	Sprite player_sprite = {
-		.tex = player_texture,
-		.fps = 1,
-		.width = 25,
-		.height = 35
-	};
-
-	Sprite player_walk = {
-		.tex = player_walk_texture,
-		.fps = 5,
-		.width = 25,
-		.height = 35
-	};
-
-	Vector2 p_pos = {10.0f, scene.height - player_sprite.height - FLOOR_HEIGHT};
-	Player player = {
-		.idle = player_sprite,
-		.walk = player_walk,
-		.pos = p_pos,
-		.flipped = false,
-		.next_to_id = 0
-	};
-	
 
 	// INITIALIZE VARIABLES FOR LOOP
 	enum mode mode = MOVE;
@@ -166,24 +133,19 @@ int main() {
 		// SET UP FOR DRAWING
 		ClearBackground(BLACK);
 
-		i32 screen_height = GetScreenHeight();
-		i32 screen_width = GetScreenWidth();
-		f32 scale = (f32) screen_height / scene.height;
-
 		// DRAW COMPONENTS
 		BeginDrawing();
 
-		DrawBackground(&scene, origin, screen_height, screen_width, scale, frames);
+		DrawBackground(&scene, origin, frames);
 
 		for (u16 i = 0; i < entity_list.size; i++) {
-			drawEntityIdle(GET_PTR(entity_list, Entity, i), &scene, scale, frames);
+			drawEntityIdle(GET_PTR(entity_list, Entity, i), &scene, frames);
 		}
-		// drawEntityIdle(&mr_rochester, &scene, scale, frames);
 
 		// DRAW PLAYER ACTION
 		switch (mode) {
 			case MOVE: {
-				playerMove(&player, &scene, scale, frames);
+				playerMove(&player, &scene, frames);
 				break;
 			}
 			case NOTES: {
@@ -203,11 +165,11 @@ int main() {
 				else {
 					takeNotes(&notes);
 				}
-				drawPlayerIdle(&player, &scene, scale, frames);
+				drawPlayerIdle(&player, &scene, frames);
 				break;
 			}
 			case DIALOGUE: {
-				drawPlayerIdle(&player, &scene, scale, frames);
+				drawPlayerIdle(&player, &scene, frames);
 				printf("%d\n", player.next_to_id);
 				for (u16 i = 0; i < entity_list.size; i++) {
 					Entity* e = GET_PTR(entity_list, Entity, i);
@@ -224,6 +186,7 @@ int main() {
 			default: {}
 		}
 
+		f32 scale = (f32) GetScreenHeight() / scene.height;
 		drawTextField(&notes, Vector2Scale(notes_pos, scale));
 
 		// GET INPUT MODE

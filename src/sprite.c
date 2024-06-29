@@ -5,28 +5,25 @@ void DrawSprite(Sprite* s,
 								bool flipped,
 								Sprite* scene,
 								Vector2 pos,
-								i32 screen_height, 
-								i32 screen_width,
-								f32 scale,
 								i32 frame) {
-
 	i32 texture_frame = 0;
 	if (s->fps > 1) {
 		texture_frame = (frame / s->fps) * s->height;
 	}
 
 	Rectangle src = {
-		0,
-		texture_frame,
-		s->width,
-		s->height
+		.x = 0,
+		.y = texture_frame,
+		.width = s->width,
+		.height = s->height
 	};
 
+	f32 scale = (f32) GetScreenHeight() / scene->height;
 	Rectangle dest = {
-		pos.x,
-		pos.y,
-		s->width * scale,
-		s->height * scale
+		.x = pos.x,
+		.y = pos.y,
+		.width = s->width * scale,
+		.height = s->height * scale
 	};
 
 	if (flipped) {
@@ -34,7 +31,7 @@ void DrawSprite(Sprite* s,
 	}
 
 	if (scene != NULL) {
-		dest.x += (screen_width - (scene->width * scale)) / 2;
+		dest.x += (GetScreenWidth() - (scene->width * scale)) / 2;
 	}
 
 	Vector2 origin = {0.0f, 0.0f};
@@ -43,11 +40,10 @@ void DrawSprite(Sprite* s,
 
 void DrawBackground(Sprite* s, 
 								Vector2 pos,
-								i32 screen_height, 
-								i32 screen_width,
-								f32 scale,
 								i32 frame) {
-	i32 offset = (screen_width - (s->width * scale)) / 2;
+	f32 scale = (f32) GetScreenHeight() / s->height;
+	i32 offset = (GetScreenWidth() - (s->width * scale)) / 2;
 	pos.x += offset;
-	DrawSprite(s, false, NULL, pos, screen_height, screen_width, scale, frame);
+
+	DrawSprite(s, false, s, pos, frame);
 }
