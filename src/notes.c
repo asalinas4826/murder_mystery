@@ -43,13 +43,7 @@ static u32 lineWidth(i32 start, char* buffer) {
 	return lineIndex(start - 1, buffer);
 }
 
-void cursorLeft(TextField* notes, char del) {
-	if (notes->buffer_idx <= 0) {
-		return;
-	}
-	notes->buffer_idx--;
-	// printf("%c\n", notes->buffer[notes->buffer_idx]);
-
+static i32 getCharWidth(TextField* notes, char del) {
 	char buff[2];
 	if (del != '\0') {
 		buff[0] = del;
@@ -59,20 +53,40 @@ void cursorLeft(TextField* notes, char del) {
 	}
 	
 	buff[1] = '\0';
-	i32 char_width = MeasureText(buff, notes->box.font_size);
-	notes->cursor_pos.x -= char_width + 4;
+	return MeasureText(buff, notes->box.font_size);
+
+}
+
+// void cursorToEndOfLine() {
+//
+// }
+
+static bool isNewLineUserDefined(TextField* notes) {
+	return lineWidth(notes->buffer_idx, notes->buffer) < notes->box.max_width - 1;
+}
+
+void cursorLeft(TextField* notes, char del) {
+	if (notes->buffer_idx <= 0) {
+		return;
+	}
+	notes->buffer_idx--;
+	// printf("%c\n", notes->buffer[notes->buffer_idx]);
+
+	i32 cursor_offset = getCharWidth(notes, del) + 4;
+	notes->cursor_pos.x -= cursor_offset;
 
 	if (notes->cursor_pos.x < 0) { // go up a line
 		notes->cursor_pos.y -= notes->box.font_size;
 		notes->cursor_pos.x = 0;
-		i32 i = notes->buffer_idx - 1;
-		bool user_defined = lineWidth(notes->buffer_idx, notes->buffer) < notes->box.max_width - 1;
+		i32 i = notes->buffer_idx - 1; // last char of line
+		bool user_defined = isNewLineUserDefined(notes);
 		// printf("%d\n", notes->box.max_width);
 		// printf("w: %d, u: %d\n", lineWidth(notes->buffer_idx, notes->buffer), user_defined);
+		char buff[2];
 		while (i >= 0 && notes->buffer[i] != '\n') {
 			buff[0] = notes->buffer[i];
 			buff[1] = '\0';
-			notes->cursor_pos.x += MeasureText(buff, notes->box.font_size) + 4;
+			notes->cursor_pos.x += cursor_offset;
 
 			i--;
 		}
