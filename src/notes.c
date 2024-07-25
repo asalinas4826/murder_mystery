@@ -81,6 +81,18 @@ static void cursorToEndOfLine(TextField* notes, char del) {
 	}
 }
 
+static void cursorToNextLine(TextField* notes) {
+	notes->cursor_pos.x = 0;
+	notes->cursor_pos.y += notes->box.font_size;
+
+	bool user_defined = isNewLineUserDefined(notes);
+
+	notes->buffer_idx++;
+	if (!user_defined) {
+		notes->idx--;
+	}
+}
+
 void cursorLeft(TextField* notes, char del) {
 	if (notes->buffer_idx <= 0) return;
 	notes->buffer_idx--;
@@ -93,21 +105,9 @@ void cursorLeft(TextField* notes, char del) {
 }
 
 void cursorRight(TextField* notes) {
-	if (notes->buffer[notes->buffer_idx] == '\0') {
-		return;
-	}
-	if (notes->buffer[notes->buffer_idx] == '\n') {
-		notes->cursor_pos.x = 0;
-		notes->cursor_pos.y += notes->box.font_size;
-
-		bool user_defined = lineWidth(notes->buffer_idx, notes->buffer) < notes->box.max_width - 1;
-		// printf("w: %d, u: %d\n", lineWidth(notes->buffer_idx, notes->buffer), user_defined);
-
-		notes->buffer_idx++;
-		if (!user_defined) {
-			notes->idx--;
-		}
-
+	if (notes->buffer[notes->buffer_idx] == '\0') return;
+	else if (notes->buffer[notes->buffer_idx] == '\n') {
+		cursorToNextLine(notes);
 	}
 	else {
 		char buff[2];
@@ -116,14 +116,12 @@ void cursorRight(TextField* notes) {
 		notes->cursor_pos.x += getCharWidth(notes, buff[0]) + CURSOR_WIDTH;
 		notes->buffer_idx++;
 	}
-
-	// printf("%c\n", notes->buffer[notes->buffer_idx]);
-	// printf("buff: %d\n", notes->buffer_idx);
 }
 
 void drawTextField(TextField* notes, Vector2 pos) {
 	Vector2 start_pos = Vector2Add(notes->cursor_pos, pos);
 	start_pos.x -= notes->cursor_offset;
+
 	Vector2 end_pos = {
 		start_pos.x,
 		start_pos.y + notes->box.font_size
@@ -152,11 +150,9 @@ static void fillBuffer(TextField* notes) {
 	while (notes->box.text[i] != '\0') {
 		width++;
 		if (notes->box.text[i] == '\n') {
-			// printf("new line");
 			width = 0;
 		}
 		else if (width >= notes->box.max_width) {
-			// printf("line wrap\n");
 			notes->buffer[j] = '\n';
 			width = 0;
 			j++;
