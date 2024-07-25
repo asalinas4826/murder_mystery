@@ -13,15 +13,14 @@ typedef struct {
 	u16 next_to_id;
 } Player;
 
+Player loadPlayer(DynArray* textures, Vector2 pos);
 
 void drawPlayerIdle(Player* player, 
 										Sprite* scene, 
-										f32 scale, 
 										i32 frame);
 
 void playerMove(Player* player, 
 								Sprite* scene, 
-								f32 scale, 
 								i32 frame);
 
 bool isNextTo(Player* player, Entity* entity);

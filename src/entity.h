@@ -15,14 +15,19 @@ typedef struct {
 	char dialogue[DIALOGUE_BUFF_SIZE];
 } Entity;
 
+typedef struct {
+	i32 fps;
+	i32 width;
+	i32 height;
+	Vector2 pos;
+	bool flipped;
+	char* path_to_texture;
+} EntityParams;
+
+Entity loadStaticEntity(DynArray* textures, EntityParams* params);
+
 void drawEntityIdle(Entity* e, 
 										Sprite* scene, 
-										f32 scale, 
 										i32 frame);
-
-void entityMove(Entity* e, 
-								Sprite* scene, 
-								f32 scale, 
-								i32 frame);
 
 #endif

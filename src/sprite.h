@@ -14,16 +14,10 @@ void DrawSprite(Sprite* s,
 								bool flipped,
 								Sprite* scene,
 								Vector2 pos,
-								i32 screen_height, 
-								i32 screen_width,
-								f32 scale,
 								i32 frame);
 
 void DrawBackground(Sprite* s,
 										Vector2 pos,
-										i32 screen_height,
-										i32 screen_width,
-										f32 scale,
 										i32 frame);
 
 #endif
