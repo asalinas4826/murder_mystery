@@ -57,50 +57,39 @@ static i32 getCharWidth(TextField* notes, char del) {
 
 }
 
-// void cursorToEndOfLine() {
-//
-// }
-
 static bool isNewLineUserDefined(TextField* notes) {
 	return lineWidth(notes->buffer_idx, notes->buffer) < notes->box.max_width - 1;
 }
 
 static void cursorToEndOfLine(TextField* notes, char del) {
-		notes->cursor_pos.x = 0;
-		i32 i = notes->buffer_idx - 1; // last char of line
-		bool user_defined = isNewLineUserDefined(notes);
-		// printf("%d\n", notes->box.max_width);
-		// printf("w: %d, u: %d\n", lineWidth(notes->buffer_idx, notes->buffer), user_defined);
-		char buff[2];
-		while (i >= 0 && notes->buffer[i] != '\n') {
-			buff[0] = notes->buffer[i];
-			buff[1] = '\0';
-			notes->cursor_pos.x += getCharWidth(notes, buff[0]) + 4;
+	notes->cursor_pos.x = 0;
+	i32 i = notes->buffer_idx - 1; // last char of line
+	bool user_defined = isNewLineUserDefined(notes);
+	char buff[2];
+	while (i >= 0 && notes->buffer[i] != '\n') {
+		buff[0] = notes->buffer[i];
+		buff[1] = '\0';
+		notes->cursor_pos.x += getCharWidth(notes, buff[0]) + CURSOR_WIDTH;
 
-			i--;
-		}
-		if (!user_defined && del == '\0') {
-			notes->idx++;
-		}
-		else if (!user_defined) {
-			cursorLeft(notes, '\0');
-		}
+		i--;
+	}
+	if (!user_defined && del == '\0') {
+		notes->idx++;
+	}
+	else if (!user_defined) {
+		cursorLeft(notes, '\0');
+	}
 }
 
 void cursorLeft(TextField* notes, char del) {
-	if (notes->buffer_idx <= 0) {
-		return;
-	}
+	if (notes->buffer_idx <= 0) return;
 	notes->buffer_idx--;
-	// printf("%c\n", notes->buffer[notes->buffer_idx]);
-
-	notes->cursor_pos.x -= getCharWidth(notes, del) + 4;
+	notes->cursor_pos.x -= getCharWidth(notes, del) + CURSOR_WIDTH;
 
 	if (notes->cursor_pos.x < 0) { // go up a line
 		notes->cursor_pos.y -= notes->box.font_size;
 		cursorToEndOfLine(notes, del);
 	}
-	// printf("buff: %d\n", notes->buffer_idx);
 }
 
 void cursorRight(TextField* notes) {
@@ -124,8 +113,7 @@ void cursorRight(TextField* notes) {
 		char buff[2];
 		buff[0] = notes->buffer[notes->buffer_idx];
 		buff[1] = '\0';
-		i32 char_width = MeasureText(buff, notes->box.font_size);
-		notes->cursor_pos.x += char_width + 4;
+		notes->cursor_pos.x += getCharWidth(notes, buff[0]) + CURSOR_WIDTH;
 		notes->buffer_idx++;
 	}
 
@@ -145,15 +133,19 @@ void drawTextField(TextField* notes, Vector2 pos) {
 	DrawTextEx(notes->box.font, notes->buffer, pos, notes->box.font_size, 4, WHITE);
 }
 
-static void fillBuffer(TextField* notes) {
-	// clear buffer
+static void clearBuffer(char* buffer) {
 	u32 j = 0;
-	while (notes->buffer[j] != '\0') {
-		notes->buffer[j] = '\0';
+	while (buffer[j] != '\0') {
+		buffer[j] = '\0';
 		j++;
 	}
+}
+
+static void fillBuffer(TextField* notes) {
+	clearBuffer(notes->buffer);
+	
 	// fill buffer w/ new values
-	j = 0;
+	u32 j = 0;
 	u32 i = 0;
 	u32 width = 0;
 

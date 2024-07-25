@@ -1,6 +1,8 @@
 #ifndef NOTES_H
 #define NOTES_H
 
+#define CURSOR_WIDTH 4
+
 #include "util.h"
 #include "textbox.h"
 
